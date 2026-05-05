@@ -1,0 +1,47 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    function isAdmin() {
+      return isSignedIn() && request.auth.token.email == 'admin@dkwin.com';
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    // Chats Collection
+    match /chats/{chatId} {
+      allow create: if true; 
+      allow get: if true;
+      allow update: if (
+        isAdmin() ||
+        (
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+            'userTyping', 'userOnline', 'lastSeen', 'lastMessage', 'lastMessageTime', 'unreadCount'
+          ])
+        )
+      );
+      allow list: if isAdmin();
+
+      // Messages Sub-collection
+      match /messages/{messageId} {
+        allow read: if true;
+        allow create: if true; // Basic create allowed for both user and admin
+        allow update: if (
+          isAdmin() || 
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['seen', 'text', 'edited'])
+        );
+      }
+    }
+  }
+}

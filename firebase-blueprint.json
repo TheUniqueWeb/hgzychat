@@ -1,0 +1,49 @@
+{
+  "entities": {
+    "Chat": {
+      "title": "Chat Session",
+      "description": "Represents a chat session between a user and admin",
+      "type": "object",
+      "properties": {
+        "status": { "type": "string", "enum": ["active", "closed"] },
+        "createdAt": { "type": "number" },
+        "userOnline": { "type": "boolean" },
+        "adminOnline": { "type": "boolean" },
+        "userTyping": { "type": "boolean" },
+        "adminTyping": { "type": "boolean" },
+        "lastMessage": { "type": "string" },
+        "lastMessageTime": { "type": "number" },
+        "unreadCount": { "type": "number" },
+        "userName": { "type": "string" },
+        "lastSeen": { "type": "number" }
+      },
+      "required": ["status", "createdAt"]
+    },
+    "Message": {
+      "title": "Chat Message",
+      "description": "A single message in a chat",
+      "type": "object",
+      "properties": {
+        "sender": { "type": "string", "enum": ["user", "admin"] },
+        "text": { "type": "string" },
+        "fileUrl": { "type": "string" },
+        "fileName": { "type": "string" },
+        "fileType": { "type": "string" },
+        "timestamp": { "type": "number" },
+        "seen": { "type": "boolean" },
+        "replyTo": { "type": "string" }
+      },
+      "required": ["sender", "timestamp", "seen"]
+    }
+  },
+  "firestore": {
+    "/chats/{chatId}": {
+      "schema": "Chat",
+      "description": "Chat sessions"
+    },
+    "/chats/{chatId}/messages/{messageId}": {
+      "schema": "Message",
+      "description": "Messages within a chat"
+    }
+  }
+}
